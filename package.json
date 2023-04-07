@@ -1,0 +1,17 @@
+{
+  "name": "minecraft-world-converter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "converter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cli-spinners": "^2.8.0",
+    "ora": "^6.3.0",
+    "yargs": "^17.7.1"
+  }
+}
