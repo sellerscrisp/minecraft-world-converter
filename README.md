@@ -4,5 +4,5 @@ A simple application to convert server worlds to singleplayer game saves. Spigot
 # Usage
 First, in the project directory, run `npm install`
 ```bash 
-node converter.js -i <world> <world_nether> <world_the_end> -o <converted_world>
+node converter.js --input <world> <world_nether> <world_the_end> --output <converted_world>
 ```
