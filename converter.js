@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
+const fse = require('fs-extra');
 
 class WorldConverter {
   constructor(input, output) {
@@ -11,13 +12,12 @@ class WorldConverter {
 
   async convert() {
     const ora = (await import('ora')).default;
-    const spinner = ora(' Converting worlds...').start();
-
-    spinner.color = 'cyan';
+    const spinner = ora('Converting worlds...').start();
 
     try {
       fs.mkdirSync(this.output, { recursive: true });
 
+      // Copy bukkit.yml to output directory
       const bukkitYmlPath = path.join(path.dirname(this.input[0]), 'bukkit.yml');
       if (fs.existsSync(bukkitYmlPath)) {
         fs.copyFileSync(bukkitYmlPath, path.join(this.output, 'bukkit.yml'));
@@ -27,20 +27,17 @@ class WorldConverter {
         const dirName = path.basename(dir);
         let targetDir;
 
-        switch (dirName) {
-          case 'world':
-            targetDir = this.output;
-            fs.copyFileSync(path.join(dir, 'level.dat'), path.join(targetDir, 'level.dat'));
-            break;
-          case 'world_nether':
-            targetDir = path.join(this.output, 'DIM-1');
-            break;
-          case 'world_the_end':
-            targetDir = path.join(this.output, 'DIM1');
-            break;
-          default:
-            throw new Error(`Invalid world directory: ${dirName}`);
+        if (dirName === 'world') {
+          targetDir = this.output;
+        } else if (dirName === 'world_nether') {
+          targetDir = path.join(this.output, 'DIM-1');
+        } else if (dirName === 'world_the_end') {
+          targetDir = path.join(this.output, 'DIM1');
+        } else {
+          continue;
         }
+
+        fs.mkdirSync(targetDir, { recursive: true });
 
         this.copyDirectory(dir, targetDir);
       }
@@ -52,20 +49,7 @@ class WorldConverter {
   }
 
   copyDirectory(src, dest) {
-    fs.mkdirSync(dest, { recursive: true });
-
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name);
-      const destPath = path.join(dest, entry.name);
-
-      if (entry.isDirectory()) {
-        this.copyDirectory(srcPath, destPath);
-      } else {
-        fs.copyFileSync(srcPath, destPath);
-      }
-    }
+    fse.copySync(src, dest, { recursive: true });
   }
 }
 
