@@ -27,7 +27,7 @@ class WorldConverter {
           case 'world_nether':
             targetDir = path.join(this.output, 'DIM-1');
             break;
-          case 'world_end':
+          case 'world_the_end':
             targetDir = path.join(this.output, 'DIM1');
             break;
           default:
@@ -49,10 +49,10 @@ class WorldConverter {
 
 const argv = yargs(hideBin(process.argv))
   .scriptName('worldconverter')
-  .usage('Usage: $0 -i [world world_nether world_end] -o [output]')
+  .usage('Usage: $0 -i [world world_nether world_the_end] -o [output]')
   .option('i', {
     alias: 'input',
-    describe: 'Paths to world, world_nether, and world_end',
+    describe: 'Paths to world, world_nether, and world_the_end',
     type: 'array',
     demandOption: true,
   })
@@ -74,7 +74,7 @@ const argv = yargs(hideBin(process.argv))
   })
   .check((argv) => {
     if (argv.input.length !== 3) {
-      throw new Error('Please provide paths to world, world_nether, and world_end');
+      throw new Error('Please provide paths to world, world_nether, and world_the_end');
     }
     return true;
   })
