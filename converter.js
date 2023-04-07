@@ -30,9 +30,9 @@ class WorldConverter {
         if (dirName === 'world') {
           targetDir = this.output;
         } else if (dirName === 'world_nether') {
-          targetDir = path.join(this.output, 'DIM-1');
+          targetDir = path.join(this.output, '');
         } else if (dirName === 'world_the_end') {
-          targetDir = path.join(this.output, 'DIM1');
+          targetDir = path.join(this.output, '');
         } else {
           continue;
         }
@@ -42,6 +42,8 @@ class WorldConverter {
         this.copyDirectory(dir, targetDir);
       }
 
+      this.mergePlayerData(this.input[0], this.output);
+
       spinner.succeed('Worlds successfully converted.');
     } catch (error) {
       spinner.fail(`Conversion failed: ${error.message}`);
@@ -50,6 +52,15 @@ class WorldConverter {
 
   copyDirectory(src, dest) {
     fse.copySync(src, dest, { recursive: true });
+  }
+
+  mergePlayerData(src, dest) {
+    const playerDataSrc = path.join(src, 'playerdata');
+    const playerDataDest = path.join(dest, 'playerdata');
+
+    if (fs.existsSync(playerDataSrc)) {
+      this.copyDirectory(playerDataSrc, playerDataDest);
+    }
   }
 }
 
