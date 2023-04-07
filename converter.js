@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const yargs = require('yargs');
+const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
 class WorldConverter {
@@ -11,10 +11,17 @@ class WorldConverter {
 
   async convert() {
     const ora = (await import('ora')).default;
-    const spinner = ora('Converting worlds...').start();
+    const spinner = ora(' Converting worlds...').start();
+
+    spinner.color = 'cyan';
 
     try {
       fs.mkdirSync(this.output, { recursive: true });
+
+      const bukkitYmlPath = path.join(path.dirname(this.input[0]), 'bukkit.yml');
+      if (fs.existsSync(bukkitYmlPath)) {
+        fs.copyFileSync(bukkitYmlPath, path.join(this.output, 'bukkit.yml'));
+      }
 
       for (const dir of this.input) {
         const dirName = path.basename(dir);
@@ -23,6 +30,7 @@ class WorldConverter {
         switch (dirName) {
           case 'world':
             targetDir = this.output;
+            fs.copyFileSync(path.join(dir, 'level.dat'), path.join(targetDir, 'level.dat'));
             break;
           case 'world_nether':
             targetDir = path.join(this.output, 'DIM-1');
@@ -34,15 +42,29 @@ class WorldConverter {
             throw new Error(`Invalid world directory: ${dirName}`);
         }
 
-        fs.mkdirSync(targetDir, { recursive: true });
-        fs.readdirSync(dir).forEach((file) => {
-          fs.copyFileSync(path.join(dir, file), path.join(targetDir, file));
-        });
+        this.copyDirectory(dir, targetDir);
       }
 
       spinner.succeed('Worlds successfully converted.');
     } catch (error) {
       spinner.fail(`Conversion failed: ${error.message}`);
+    }
+  }
+
+  copyDirectory(src, dest) {
+    fs.mkdirSync(dest, { recursive: true });
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+
+      if (entry.isDirectory()) {
+        this.copyDirectory(srcPath, destPath);
+      } else {
+        fs.copyFileSync(srcPath, destPath);
+      }
     }
   }
 }
@@ -62,16 +84,8 @@ const argv = yargs(hideBin(process.argv))
     type: 'string',
     default: './converted-world',
   })
-  .option('h', {
-    alias: 'help',
-    type: 'boolean',
-    description: 'Show help',
-  })
-  .option('v', {
-    alias: 'version',
-    type: 'boolean',
-    description: 'Show version',
-  })
+  .help()
+  .version()
   .check((argv) => {
     if (argv.input.length !== 3) {
       throw new Error('Please provide paths to world, world_nether, and world_the_end');
