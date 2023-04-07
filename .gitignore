@@ -130,5 +130,5 @@ dist
 .pnp.*
 
 # input/output folders
-input/.
-output/.
+input/
+output/
